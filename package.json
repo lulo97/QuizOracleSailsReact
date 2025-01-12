@@ -1,0 +1,7 @@
+{
+    "scripts": {
+      "backend": "cd ./BackendSails && node app",
+      "frontend": "cd ./FrontendReact && npm run dev"
+    }
+  }
+  

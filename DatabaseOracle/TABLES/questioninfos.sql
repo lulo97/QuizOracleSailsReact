@@ -1,0 +1,43 @@
+CREATE TABLE questioninfos
+    (id NUMBER ,
+    content VARCHAR2(200 BYTE),
+    imageurl VARCHAR2(200 BYTE),
+    audiourl VARCHAR2(200 BYTE),
+    videourl VARCHAR2(200 BYTE),
+    explaination VARCHAR2(200 BYTE))
+  SEGMENT CREATION IMMEDIATE
+  PCTFREE     10
+  PCTUSED     40
+  INITRANS    1
+  MAXTRANS    255
+  TABLESPACE  system
+  STORAGE   (
+    INITIAL     65536
+    NEXT        1048576
+    MINEXTENTS  1
+    MAXEXTENTS  2147483645
+  )
+  NOCACHE
+  MONITORING
+  NOPARALLEL
+  LOGGING
+/
+
+
+
+
+ALTER TABLE questioninfos
+ADD PRIMARY KEY (id)
+USING INDEX
+  PCTFREE     10
+  INITRANS    2
+  MAXTRANS    255
+  TABLESPACE  system
+  STORAGE   (
+    INITIAL     65536
+    NEXT        1048576
+    MINEXTENTS  1
+    MAXEXTENTS  2147483645
+  )
+/
+

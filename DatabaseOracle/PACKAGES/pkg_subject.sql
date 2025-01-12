@@ -41,7 +41,7 @@ END;
 
 CREATE OR REPLACE 
 PACKAGE BODY pkg_subject
-/* Formatted on 12-Jan-2025 17:04:54 (QP5 v5.336) */
+/* Formatted on 12-Jan-2025 22:32:12 (QP5 v5.336) */
 IS
     PROCEDURE prc_read (p_refcursor       OUT SYS_REFCURSOR,
                         p_obj                 pkg_type.obj,
@@ -50,7 +50,17 @@ IS
                         p_error_message   OUT VARCHAR2)
     IS
     BEGIN
-        OPEN p_refcursor FOR SELECT * FROM subjects;
+        prc_log ('3 p_language=' || p_language);
+
+        OPEN p_refcursor FOR
+            SELECT s.id AS "id",
+                   CASE
+                       WHEN p_language = 'vi' THEN s.vi
+                       WHEN p_language = 'en' THEN s.en
+                   END AS "name",
+                   s.description AS "description",
+                   s.parent_id AS "parentId"
+            FROM subjects s;
 
         RETURN;
     END;
@@ -64,7 +74,7 @@ IS
         l_count   NUMBER;
         l_id      NUMBER := NVL (p_obj ('id'), subjects_sequence.NEXTVAL);
     BEGIN
-        OPEN p_refcursor FOR SELECT * FROM subjects;
+        prc_log ('3');
 
         --Check id exist
         SELECT COUNT (*)
@@ -78,6 +88,8 @@ IS
             p_error_message :=
                 fn_get_error_message (p_error_code, p_language);
         END IF;
+
+        prc_log ('4');
 
         --Check name exist
         SELECT COUNT (*)
@@ -105,9 +117,6 @@ IS
         OPEN p_refcursor FOR SELECT *
                              FROM DUAL
                              WHERE 1 = 0;
-
-        p_error_code := 0;
-        p_error_message := fn_get_error_message (p_error_code, p_language);
 
         RETURN;
     END;
@@ -148,6 +157,9 @@ IS
     AS
         obj   pkg_type.obj;
     BEGIN
+        p_error_code := 0;
+        p_error_message := fn_get_error_message (p_error_code, p_language);
+
         obj ('id') := p_id;
         obj ('name') := p_name;
         obj ('description') := p_description;
@@ -189,7 +201,30 @@ IS
                         p_error_message   => p_error_message);
         END IF;
 
+        COMMIT;
+
         RETURN;
+    EXCEPTION
+        WHEN OTHERS
+        THEN
+            prc_log (
+                   'SQLERRM='
+                || SQLERRM
+                || ','
+                || 'SQLCODE='
+                || SQLCODE
+                || ','
+                || 'TRACE='
+                || DBMS_UTILITY.format_error_backtrace
+                || ','
+                || 'STACK='
+                || DBMS_UTILITY.format_error_stack);
+
+            OPEN p_refcursor FOR SELECT *
+                                 FROM DUAL
+                                 WHERE 1 = 0;
+
+            COMMIT;
     END;
 END;
 /

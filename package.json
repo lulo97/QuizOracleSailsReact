@@ -1,6 +1,6 @@
 {
     "scripts": {
-      "backend": "cd ./BackendSails && node app",
+      "backend": "cd ./BackendSails && nodemon --watch BackendSails app.js",
       "frontend": "cd ./FrontendReact && npm run dev"
     }
   }

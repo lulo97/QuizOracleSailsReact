@@ -30,8 +30,6 @@ module.exports = {
       prc_params[key] = value ?? '';
     };
 
-    console.log(prc_params)
-
     const connection = await getConnection();
 
     const result_query = await connection.execute(

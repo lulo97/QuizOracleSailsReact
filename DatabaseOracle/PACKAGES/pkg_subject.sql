@@ -50,14 +50,9 @@ IS
                         p_error_message   OUT VARCHAR2)
     IS
     BEGIN
-        prc_log ('3 p_language=' || p_language);
-
         OPEN p_refcursor FOR
             SELECT s.id AS "id",
-                   CASE
-                       WHEN p_language = 'vi' THEN s.vi
-                       WHEN p_language = 'en' THEN s.en
-                   END AS "name",
+                   fn_translate(s.id, p_language, 'SUBJECTS') AS "name",
                    s.description AS "description",
                    s.parent_id AS "parentId"
             FROM subjects s;
@@ -74,8 +69,6 @@ IS
         l_count   NUMBER;
         l_id      NUMBER := NVL (p_obj ('id'), subjects_sequence.NEXTVAL);
     BEGIN
-        prc_log ('3');
-
         --Check id exist
         SELECT COUNT (*)
         INTO l_count
@@ -88,8 +81,6 @@ IS
             p_error_message :=
                 fn_get_error_message (p_error_code, p_language);
         END IF;
-
-        prc_log ('4');
 
         --Check name exist
         SELECT COUNT (*)
@@ -156,6 +147,7 @@ IS
                         p_error_message   OUT VARCHAR2)
     AS
         obj   pkg_type.obj;
+        l_log varchar2(4000);
     BEGIN
         p_error_code := 0;
         p_error_message := fn_get_error_message (p_error_code, p_language);
@@ -207,18 +199,11 @@ IS
     EXCEPTION
         WHEN OTHERS
         THEN
-            prc_log (
-                   'SQLERRM='
-                || SQLERRM
-                || ','
-                || 'SQLCODE='
-                || SQLCODE
-                || ','
-                || 'TRACE='
-                || DBMS_UTILITY.format_error_backtrace
-                || ','
-                || 'STACK='
-                || DBMS_UTILITY.format_error_stack);
+            l_log := l_log || 'SQLERRM='|| SQLERRM || ',';
+            l_log := l_log || 'SQLCODE='|| SQLCODE || ',';
+            l_log := l_log || 'TRACE='|| DBMS_UTILITY.format_error_backtrace || ',';
+            l_log := l_log || 'STACK='|| DBMS_UTILITY.format_error_stack;
+            prc_log (l_log);
 
             OPEN p_refcursor FOR SELECT *
                                  FROM DUAL

@@ -10,7 +10,7 @@ async function initConnectionPool() {
                 user: process.env.DB_USERNAME,
                 password: process.env.DB_PASSWORD,
                 connectString: `${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_SERVICE}`,
-                poolMin: 2,
+                poolMin: 1,
                 poolMax: 10,
                 poolIncrement: 1,
             });

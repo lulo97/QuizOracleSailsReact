@@ -1,9 +1,3 @@
-const { getConnection } = require("../../../config/database/db-connection");
-const oracledb = require("oracledb");
-const {
-    getRedisConnection,
-} = require("../../../config/redis/redis-connection");
-
 module.exports = {
     inputs: {},
 
@@ -28,24 +22,8 @@ module.exports = {
             req
         );
 
-        const redisClient = await getRedisConnection();
+        const output = await sails.helpers.redisWrapper('SUBJECT', result);
 
-        const key = "SUBJECT";
-        const value = JSON.stringify(result);
-
-        const is_exist = await redisClient.exists(key);
-
-        if (is_exist) {
-            let result_cache = await redisClient.get(key);
-            result_cache = JSON.parse(result_cache);
-            return result_cache;
-        } else {
-            console.log("Set data to redis");
-            await redisClient.set(key, value);
-        }
-
-        console.log("No cache data found");
-
-        return result;
+        return output;
     },
 };

@@ -1,6 +1,5 @@
-CREATE OR REPLACE 
-PACKAGE pkg_subject
-/* Formatted on 12-Jan-2025 16:54:55 (QP5 v5.336) */
+﻿/* Formatted on 1/26/2025 10:42:04 PM (QP5 v5.326) */
+CREATE OR REPLACE PACKAGE pkg_subject
 IS
     PROCEDURE prc_crud (p_refcursor       OUT SYS_REFCURSOR,
                         p_action              VARCHAR2,
@@ -39,9 +38,8 @@ END;
 /
 
 
-CREATE OR REPLACE 
-PACKAGE BODY pkg_subject
-/* Formatted on 12-Jan-2025 22:32:12 (QP5 v5.336) */
+/* Formatted on 1/26/2025 10:42:04 PM (QP5 v5.326) */
+CREATE OR REPLACE PACKAGE BODY pkg_subject
 IS
     PROCEDURE prc_read (p_refcursor       OUT SYS_REFCURSOR,
                         p_obj                 pkg_type.obj,
@@ -49,15 +47,31 @@ IS
                         p_error_code      OUT VARCHAR2,
                         p_error_message   OUT VARCHAR2)
     IS
+        l_log   VARCHAR2 (4000);
     BEGIN
         OPEN p_refcursor FOR
-            SELECT s.id AS "id",
-                   fn_translate(s.id, p_language, 'SUBJECTS') AS "name",
-                   s.description AS "description",
-                   s.parent_id AS "parentId"
-            FROM subjects s;
+            SELECT s.id
+                       AS "id",
+                   fn_translate (s.id, p_language, 'SUBJECTS')
+                       AS "name",
+                   s.description
+                       AS "description",
+                   s.parent_id
+                       AS "parentId"
+              FROM subjects s;
 
         RETURN;
+    EXCEPTION
+        WHEN OTHERS
+        THEN
+            l_log := l_log || 'SQLERRM=' || SQLERRM || ',';
+            l_log :=
+                   l_log
+                || 'TRACE='
+                || DBMS_UTILITY.format_error_backtrace
+                || ',';
+            prc_log (l_log);
+            prc_empty_cursor (p_refcursor);
     END;
 
     PROCEDURE prc_create (p_refcursor       OUT SYS_REFCURSOR,
@@ -67,32 +81,33 @@ IS
                           p_error_message   OUT VARCHAR2)
     IS
         l_count   NUMBER;
+        l_log     VARCHAR2 (4000);
         l_id      NUMBER := NVL (p_obj ('id'), subjects_sequence.NEXTVAL);
     BEGIN
         --Check id exist
         SELECT COUNT (*)
-        INTO l_count
-        FROM subjects
-        WHERE id = p_obj ('id');
+          INTO l_count
+          FROM subjects
+         WHERE id = p_obj ('id');
 
         IF l_count > 0
         THEN
             p_error_code := '-1';
-            p_error_message :=
-                fn_get_error_message (p_error_code, p_language);
+            RAISE pkg_const.exception_unknown;
         END IF;
 
         --Check name exist
         SELECT COUNT (*)
-        INTO l_count
-        FROM subjects
-        WHERE name = p_obj ('name');
+          INTO l_count
+          FROM subjects
+         WHERE name = p_obj ('name');
 
         IF l_count > 0
         THEN
             p_error_code := '-3';
             p_error_message :=
                 fn_get_error_message (p_error_code, p_language, 'name');
+            RAISE pkg_const.exception_unknown;
         END IF;
 
         --Insert
@@ -100,16 +115,23 @@ IS
                               name,
                               description,
                               parent_id)
-        VALUES (l_id,
-                p_obj ('name'),
-                p_obj ('description'),
-                p_obj ('parent_id'));
+             VALUES (l_id,
+                     p_obj ('name'),
+                     p_obj ('description'),
+                     p_obj ('parent_id'));
 
-        OPEN p_refcursor FOR SELECT *
-                             FROM DUAL
-                             WHERE 1 = 0;
-
-        RETURN;
+        prc_empty_cursor (p_refcursor);
+    EXCEPTION
+        WHEN OTHERS
+        THEN
+            l_log := l_log || 'SQLERRM=' || SQLERRM || ',';
+            l_log :=
+                   l_log
+                || 'TRACE='
+                || DBMS_UTILITY.format_error_backtrace
+                || ',';
+            prc_log (l_log);
+            prc_empty_cursor (p_refcursor);
     END;
 
     PROCEDURE prc_delete (p_refcursor       OUT SYS_REFCURSOR,
@@ -118,10 +140,37 @@ IS
                           p_error_code      OUT VARCHAR2,
                           p_error_message   OUT VARCHAR2)
     IS
+        l_count   NUMBER := 0;
+        l_log     VARCHAR2 (4000);
     BEGIN
-        OPEN p_refcursor FOR SELECT * FROM subjects;
+        --Check id exist
+        SELECT COUNT (*)
+          INTO l_count
+          FROM subjects
+         WHERE id = p_obj ('id');
 
-        RETURN;
+        IF l_count > 0
+        THEN
+            p_error_code := '2';
+            RAISE pkg_const.exception_unknown;
+        END IF;
+
+        --Delete
+        DELETE subjects
+         WHERE id = p_obj ('id');
+
+        prc_empty_cursor (p_refcursor);
+    EXCEPTION
+        WHEN OTHERS
+        THEN
+            l_log := l_log || 'SQLERRM=' || SQLERRM || ',';
+            l_log :=
+                   l_log
+                || 'TRACE='
+                || DBMS_UTILITY.format_error_backtrace
+                || ',';
+            prc_log (l_log);
+            prc_empty_cursor (p_refcursor);
     END;
 
     PROCEDURE prc_update (p_refcursor       OUT SYS_REFCURSOR,
@@ -130,10 +179,55 @@ IS
                           p_error_code      OUT VARCHAR2,
                           p_error_message   OUT VARCHAR2)
     IS
+        l_count   NUMBER := 0;
+        l_log     VARCHAR2 (4000);
     BEGIN
-        OPEN p_refcursor FOR SELECT * FROM subjects;
+        --Check id exist
+        SELECT COUNT (*)
+          INTO l_count
+          FROM subjects
+         WHERE id = p_obj ('id');
 
-        RETURN;
+        IF l_count = 0
+        THEN
+            p_error_code := '2';
+
+            RAISE pkg_const.exception_unknown;
+        END IF;
+
+        --Check name exist except current record
+        SELECT COUNT (*)
+          INTO l_count
+          FROM subjects
+         WHERE name = p_obj ('name') AND id <> p_obj ('id');
+
+        IF l_count > 0
+        THEN
+            p_error_code := '-3';
+            p_error_message :=
+                fn_get_error_message (p_error_code, p_language, 'name');
+            RAISE pkg_const.exception_unknown;
+        END IF;
+
+        --Update
+        UPDATE subjects
+           SET name = p_obj ('name'),
+               description = p_obj ('description'),
+               parent_id = p_obj ('parent_id')
+         WHERE id = p_obj ('id');
+
+        prc_empty_cursor (p_refcursor);
+    EXCEPTION
+        WHEN OTHERS
+        THEN
+            l_log := l_log || 'SQLERRM=' || SQLERRM || ',';
+            l_log :=
+                   l_log
+                || 'TRACE='
+                || DBMS_UTILITY.format_error_backtrace
+                || ',';
+            prc_log (l_log);
+            prc_empty_cursor (p_refcursor);
     END;
 
     PROCEDURE prc_crud (p_refcursor       OUT SYS_REFCURSOR,
@@ -146,12 +240,9 @@ IS
                         p_error_code      OUT VARCHAR2,
                         p_error_message   OUT VARCHAR2)
     AS
-        obj   pkg_type.obj;
-        l_log varchar2(4000);
+        obj     pkg_type.obj;
+        l_log   VARCHAR2 (4000);
     BEGIN
-        p_error_code := 0;
-        p_error_message := fn_get_error_message (p_error_code, p_language);
-
         obj ('id') := p_id;
         obj ('name') := p_name;
         obj ('description') := p_description;
@@ -193,24 +284,33 @@ IS
                         p_error_message   => p_error_message);
         END IF;
 
-        COMMIT;
+        IF p_error_code IS NULL
+        THEN
+            p_error_code := '0';
+            p_error_message :=
+                fn_get_error_message (p_error_code, p_language);
+        END IF;
 
-        RETURN;
+        COMMIT;
     EXCEPTION
         WHEN OTHERS
         THEN
-            l_log := l_log || 'SQLERRM='|| SQLERRM || ',';
-            l_log := l_log || 'SQLCODE='|| SQLCODE || ',';
-            l_log := l_log || 'TRACE='|| DBMS_UTILITY.format_error_backtrace || ',';
-            l_log := l_log || 'STACK='|| DBMS_UTILITY.format_error_stack;
+            l_log := l_log || 'SQLERRM=' || SQLERRM || ',';
+            l_log :=
+                   l_log
+                || 'TRACE='
+                || DBMS_UTILITY.format_error_backtrace
+                || ',';
             prc_log (l_log);
+            p_error_code := '-1';
 
-            OPEN p_refcursor FOR SELECT *
-                                 FROM DUAL
-                                 WHERE 1 = 0;
+            IF p_error_message IS NULL
+            THEN
+                p_error_message :=
+                    fn_get_error_message (p_error_code, p_language);
+            END IF;
 
-            COMMIT;
+            prc_empty_cursor (p_refcursor);
     END;
 END;
 /
-

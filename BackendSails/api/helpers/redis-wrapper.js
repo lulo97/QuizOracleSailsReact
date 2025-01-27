@@ -16,6 +16,8 @@ module.exports = {
     fn: async function (inputs, exits) {
         const { key, value } = inputs;
 
+        if (process.env.REDIS_IS_CONNECT === 'N') return exits.success(value); ;
+
         const redisClient = await getRedisConnection();
 
         const value_string = JSON.stringify(value);

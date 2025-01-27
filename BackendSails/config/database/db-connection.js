@@ -2,18 +2,20 @@ const oracledb = require('oracledb');
 
 let pool;
 
+const DB_CONFIG = {
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    connectString: `${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_SERVICE}`,
+    poolMin: Number(process.env.DB_POOL_MIN),
+    poolMax: Number(process.env.DB_POOL_MAX),
+    poolIncrement: Number(process.env.DB_POOL_INCREMENT),
+}
+
 async function initConnectionPool() {
     try {
         if (!pool) {
             oracledb.initOracleClient({ libDir: process.env.DB_CLENT_PATH });
-            pool = await oracledb.createPool({
-                user: process.env.DB_USERNAME,
-                password: process.env.DB_PASSWORD,
-                connectString: `${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_SERVICE}`,
-                poolMin: process.env.DB_POOL_MIN,
-                poolMax: process.env.DB_POOL_MAX,
-                poolIncrement: process.env.DB_POOL_INCREMENT,
-            });
+            pool = await oracledb.createPool(DB_CONFIG);
             console.log("Oracle connection pool initialized.");
         }
     } catch (err) {
@@ -44,4 +46,5 @@ async function closePool() {
 module.exports = {
     getConnection,
     closePool,
+    DB_CONFIG
 };

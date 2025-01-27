@@ -5,6 +5,7 @@ let redisClient = null;
 let connectionAttempts = 0;
 
 function getRedisConnection() {
+    if (process.env.REDIS_IS_CONNECT === 'N') return null;
     if (!redisClient) {
         redisClient = new Redis({
             port: process.env.REDIS_PORT,

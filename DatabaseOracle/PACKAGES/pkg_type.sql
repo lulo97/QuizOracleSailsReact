@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/26/2025 10:42:04 PM (QP5 v5.326) */
+﻿/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
 CREATE OR REPLACE PACKAGE pkg_type
 IS
     TYPE obj IS TABLE OF VARCHAR2 (200)
@@ -7,7 +7,7 @@ END;
 /
 
 
-/* Formatted on 1/26/2025 10:42:04 PM (QP5 v5.326) */
+/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
 CREATE OR REPLACE PACKAGE BODY pkg_type
 IS
 END;

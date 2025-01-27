@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/26/2025 10:42:04 PM (QP5 v5.326) */
+﻿/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
 CREATE OR REPLACE PACKAGE pkg_subject
 IS
     PROCEDURE prc_crud (p_refcursor       OUT SYS_REFCURSOR,
@@ -38,7 +38,7 @@ END;
 /
 
 
-/* Formatted on 1/26/2025 10:42:04 PM (QP5 v5.326) */
+/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
 CREATE OR REPLACE PACKAGE BODY pkg_subject
 IS
     PROCEDURE prc_read (p_refcursor       OUT SYS_REFCURSOR,
@@ -61,6 +61,9 @@ IS
               FROM subjects s;
 
         RETURN;
+
+        p_error_code := '0';
+        p_error_message := fn_get_error_message (p_error_code, p_language);
     EXCEPTION
         WHEN OTHERS
         THEN
@@ -71,7 +74,10 @@ IS
                 || DBMS_UTILITY.format_error_backtrace
                 || ',';
             prc_log (l_log);
-            prc_empty_cursor (p_refcursor);
+            prc_empty_cursor (p_refcursor,
+                              p_error_code,
+                              p_error_message,
+                              p_language);
     END;
 
     PROCEDURE prc_create (p_refcursor       OUT SYS_REFCURSOR,
@@ -120,7 +126,12 @@ IS
                      p_obj ('description'),
                      p_obj ('parent_id'));
 
-        prc_empty_cursor (p_refcursor);
+        p_error_code := '0';
+
+        prc_empty_cursor (p_refcursor,
+                          p_error_code,
+                          p_error_message,
+                          p_language);
     EXCEPTION
         WHEN OTHERS
         THEN
@@ -131,7 +142,10 @@ IS
                 || DBMS_UTILITY.format_error_backtrace
                 || ',';
             prc_log (l_log);
-            prc_empty_cursor (p_refcursor);
+            prc_empty_cursor (p_refcursor,
+                              p_error_code,
+                              p_error_message,
+                              p_language);
     END;
 
     PROCEDURE prc_delete (p_refcursor       OUT SYS_REFCURSOR,
@@ -149,9 +163,10 @@ IS
           FROM subjects
          WHERE id = p_obj ('id');
 
-        IF l_count > 0
+        IF l_count = 0
         THEN
             p_error_code := '2';
+            PRC_log ('a err=' || p_error_code);
             RAISE pkg_const.exception_unknown;
         END IF;
 
@@ -159,10 +174,16 @@ IS
         DELETE subjects
          WHERE id = p_obj ('id');
 
-        prc_empty_cursor (p_refcursor);
+        p_error_code := '0';
+
+        prc_empty_cursor (p_refcursor,
+                          p_error_code,
+                          p_error_message,
+                          p_language);
     EXCEPTION
         WHEN OTHERS
         THEN
+            PRC_log ('b err=' || p_error_code);
             l_log := l_log || 'SQLERRM=' || SQLERRM || ',';
             l_log :=
                    l_log
@@ -170,7 +191,10 @@ IS
                 || DBMS_UTILITY.format_error_backtrace
                 || ',';
             prc_log (l_log);
-            prc_empty_cursor (p_refcursor);
+            prc_empty_cursor (p_refcursor,
+                              p_error_code,
+                              p_error_message,
+                              p_language);
     END;
 
     PROCEDURE prc_update (p_refcursor       OUT SYS_REFCURSOR,
@@ -216,7 +240,12 @@ IS
                parent_id = p_obj ('parent_id')
          WHERE id = p_obj ('id');
 
-        prc_empty_cursor (p_refcursor);
+        p_error_code := '0';
+
+        prc_empty_cursor (p_refcursor,
+                          p_error_code,
+                          p_error_message,
+                          p_language);
     EXCEPTION
         WHEN OTHERS
         THEN
@@ -227,7 +256,10 @@ IS
                 || DBMS_UTILITY.format_error_backtrace
                 || ',';
             prc_log (l_log);
-            prc_empty_cursor (p_refcursor);
+            prc_empty_cursor (p_refcursor,
+                              p_error_code,
+                              p_error_message,
+                              p_language);
     END;
 
     PROCEDURE prc_crud (p_refcursor       OUT SYS_REFCURSOR,
@@ -302,15 +334,10 @@ IS
                 || DBMS_UTILITY.format_error_backtrace
                 || ',';
             prc_log (l_log);
-            p_error_code := '-1';
-
-            IF p_error_message IS NULL
-            THEN
-                p_error_message :=
-                    fn_get_error_message (p_error_code, p_language);
-            END IF;
-
-            prc_empty_cursor (p_refcursor);
+            prc_empty_cursor (p_refcursor,
+                              p_error_code,
+                              p_error_message,
+                              p_language);
     END;
 END;
 /

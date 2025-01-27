@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/26/2025 10:42:05 PM (QP5 v5.326) */
+﻿/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
 CREATE OR REPLACE PROCEDURE prc_log (p_content VARCHAR2)
 AS
     l_sqlcode   VARCHAR2 (200);
@@ -6,6 +6,11 @@ AS
     l_trace     VARCHAR2 (4000);
     l_stack     VARCHAR2 (4000);
 BEGIN
+    IF INSTR (p_content, 'User-Defined Exception') > 0
+    THEN
+        RETURN;
+    END IF;
+
     -- Primary Insert: Attempt to log the content
     INSERT INTO tbl_logs (id, logtime, content)
          VALUES (tbl_logs_sequence.NEXTVAL, CURRENT_TIMESTAMP, p_content);

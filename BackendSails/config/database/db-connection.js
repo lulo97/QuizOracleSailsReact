@@ -10,9 +10,9 @@ async function initConnectionPool() {
                 user: process.env.DB_USERNAME,
                 password: process.env.DB_PASSWORD,
                 connectString: `${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_SERVICE}`,
-                poolMin: 1,
-                poolMax: 10,
-                poolIncrement: 1,
+                poolMin: process.env.DB_POOL_MIN,
+                poolMax: process.env.DB_POOL_MAX,
+                poolIncrement: process.env.DB_POOL_INCREMENT,
             });
             console.log("Oracle connection pool initialized.");
         }

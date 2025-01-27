@@ -1,4 +1,5 @@
-const { dbConnection } = require('./config/database/db-connection');
+const { getConnection } = require('./config/database/db-connection');
+const { getRedisConnection } = require('./config/redis/redis-connection');
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -26,3 +27,13 @@ try {
 }
 
 sails.lift(rc('sails'));
+
+async function tryConnection() {
+  const db_connection = await getConnection();
+  await db_connection.close();
+  await getRedisConnection();
+}
+
+tryConnection();
+
+

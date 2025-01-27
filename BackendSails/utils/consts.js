@@ -9,4 +9,5 @@ module.exports = {
         type: oracledb.STRING,
         dir: oracledb.BIND_OUT,
     },
+    SECOND: 1000
 };

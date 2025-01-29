@@ -1,78 +1,104 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setOpened, setData } from "./SubjectSlice.js";
-import { Button, Modal } from "antd";
+import { actions } from "./SubjectSlice.js";
+import { Button, Flex } from "antd";
 import { useEffect } from "react";
 import { fetchWrapper } from "../../utils/fetchWrapper.js";
-import { Table } from 'antd';
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons"
-
-const columns = [
-    {
-        title: "Id",
-        dataIndex: "id",
-        key: "id",
-        render: (cell) => <div>{cell}</div>
-    },
-    {
-        title: "Name",
-        dataIndex: "name",
-        key: "name",
-        render: (cell) => <div>{cell}</div>
-    },
-    {
-        title: "Description",
-        dataIndex: "description",
-        key: "description",
-        render: (cell) => <div>{cell}</div>
-    },
-    {
-        title: "ParentId",
-        dataIndex: "parentId",
-        key: "parentId",
-        render: (cell) => <div>{cell}</div>
-    },
-    {
-        title: "Action",
-        dataIndex: "action",
-        key: "action",
-        render: (cell) => <div><EditOutlined /><DeleteOutlined /></div>
-    },
-]
+import { Table } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { ModalRead } from "./ModalRead.jsx";
+import { CRUD } from "../../utils/consts.js";
+import { ModalUpdate } from "./ModalUpdate.jsx";
+import { ModalDelete } from "./ModalDelete.jsx";
 
 export function Subjects() {
-    const { data, opened } = useSelector((state) => state.Subject);
+    const { data } = useSelector((state) => state.Subject);
+
+    const dispatch = useDispatch();
 
     async function fetchData() {
-        const result = await fetchWrapper("subjects", { method: "GET" }, true)
-        dispatch(setData(result.data))
+        const result = await fetchWrapper("subjects", { method: "GET" }, true);
+        dispatch(actions.setData(result.data));
     }
 
     useEffect(() => {
         fetchData();
-    }, [])
+    }, []);
 
-    const dispatch = useDispatch()
+    const columns = [
+        {
+            title: "Id",
+            dataIndex: "id",
+            key: "id",
+            render: (cell) => <div>{cell}</div>,
+        },
+        {
+            title: "Name",
+            dataIndex: "name",
+            key: "name",
+            render: (cell) => <div>{cell}</div>,
+        },
+        {
+            title: "Description",
+            dataIndex: "description",
+            key: "description",
+            render: (cell) => <div>{cell}</div>,
+        },
+        {
+            title: "ParentId",
+            dataIndex: "parentId",
+            key: "parentId",
+            render: (cell) => <div>{cell}</div>,
+        },
+        {
+            title: "Action",
+            dataIndex: "action",
+            key: "action",
+            width: 150,
+            render: (text, record) => (
+                <Flex
+                    gap="small"
+                    wrap
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                >
+                    <Button onClick={() => {
+                        dispatch(actions.setCurrentRecordId(record.id));
+                        dispatch(actions.setOpened(CRUD.UPDATE));
+                    }} color="primary" variant="outlined">
+                        <EditOutlined />
+                    </Button>
+                    <Button onClick={() => {
+                        dispatch(actions.setCurrentRecordId(record.id));
+                        dispatch(actions.setOpened(CRUD.DELETE));
+                    }} color="danger" variant="outlined">
+                        <DeleteOutlined />
+                    </Button>
+                </Flex>
+            ),
+        },
+    ];
 
     return (
         <div>
             <Button type="primary" onClick={() => fetchData()}>
                 Fetch Data
             </Button>
-            <Button type="primary" onClick={() => dispatch(setOpened(true))}>
-                Open Modal
-            </Button>
-            <Modal
-                title="Basic Modal"
-                open={opened}
-                onOk={() => dispatch(setOpened(false))}
-                onCancel={() => dispatch(setOpened(false))}
-            >
-                <p>Some contents...</p>
-                <p>Some contents...</p>
-                <p>Some contents...</p>
-            </Modal>
-            <Table columns={columns} dataSource={data} />
-            
+            <ModalRead />
+            <ModalUpdate />
+            <ModalDelete />
+            <Table
+                columns={columns}
+                dataSource={data}
+                onRow={(record) => ({
+                    onClick: () => {
+                        dispatch(actions.setOpened(CRUD.READ));
+                        dispatch(actions.setCurrentRecordId(record.id));
+                    },
+                })}
+                bordered
+                rowKey="id"
+            />
         </div>
     );
 }

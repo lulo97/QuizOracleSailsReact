@@ -1,45 +1,78 @@
-import { useState } from "react";
-import { Layout } from "../../layouts/Layout";
-import { Button } from "@mantine/core";
-import { Table } from "@mantine/core";
+import { useDispatch, useSelector } from "react-redux";
+import { setOpened, setData } from "./SubjectSlice.js";
+import { Button, Modal } from "antd";
+import { useEffect } from "react";
+import { fetchWrapper } from "../../utils/fetchWrapper.js";
+import { Table } from 'antd';
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons"
+
+const columns = [
+    {
+        title: "Id",
+        dataIndex: "id",
+        key: "id",
+        render: (cell) => <div>{cell}</div>
+    },
+    {
+        title: "Name",
+        dataIndex: "name",
+        key: "name",
+        render: (cell) => <div>{cell}</div>
+    },
+    {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        render: (cell) => <div>{cell}</div>
+    },
+    {
+        title: "ParentId",
+        dataIndex: "parentId",
+        key: "parentId",
+        render: (cell) => <div>{cell}</div>
+    },
+    {
+        title: "Action",
+        dataIndex: "action",
+        key: "action",
+        render: (cell) => <div><EditOutlined /><DeleteOutlined /></div>
+    },
+]
 
 export function Subjects() {
-    const [data, setData] = useState([]);
+    const { data, opened } = useSelector((state) => state.Subject);
 
     async function fetchData() {
-        const result_fetch = await fetch("http://localhost:1337/subjects", {
-            method: "GET",
-        });
-        const result_json = await result_fetch.json();
-        const { data, error_code, error_message } = result_json;
-        setData(data);
+        const result = await fetchWrapper("subjects", { method: "GET" }, true)
+        dispatch(setData(result.data))
     }
 
-    const rows = data.map((element) => (
-        <Table.Tr key={element.id}>
-            <Table.Td>{element.id}</Table.Td>
-            <Table.Td>{element.name}</Table.Td>
-            <Table.Td>{element.description}</Table.Td>
-            <Table.Td>{element.parent_id}</Table.Td>
-        </Table.Tr>
-    ));
+    useEffect(() => {
+        fetchData();
+    }, [])
+
+    const dispatch = useDispatch()
 
     return (
-        <Layout>
-            <div>
-                <Button onClick={fetchData}>FetchData</Button>
-                <Table striped highlightOnHover withTableBorder withColumnBorders>
-                    <Table.Thead>
-                        <Table.Tr>
-                            <Table.Th>Id</Table.Th>
-                            <Table.Th>Name</Table.Th>
-                            <Table.Th>Description</Table.Th>
-                            <Table.Th>ParentId</Table.Th>
-                        </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>{rows}</Table.Tbody>
-                </Table>
-            </div>
-        </Layout>
+        <div>
+            <Button type="primary" onClick={() => fetchData()}>
+                Fetch Data
+            </Button>
+            <Button type="primary" onClick={() => dispatch(setOpened(true))}>
+                Open Modal
+            </Button>
+            <Modal
+                title="Basic Modal"
+                open={opened}
+                onOk={() => dispatch(setOpened(false))}
+                onCancel={() => dispatch(setOpened(false))}
+            >
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+                <p>Some contents...</p>
+            </Modal>
+            <Table columns={columns} dataSource={data} />
+            
+        </div>
     );
 }

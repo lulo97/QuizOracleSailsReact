@@ -2,6 +2,7 @@ import { actions } from "./SubjectSlice.js";
 import { Modal } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { CRUD } from "../../utils/consts.js";
+import { Descriptions } from 'antd';
 
 export function ModalRead() {
 
@@ -19,8 +20,15 @@ export function ModalRead() {
                 onOk={() => dispatch(actions.setOpened(CRUD.READ))}
                 onCancel={() => dispatch(actions.setOpened(CRUD.READ))}
             >
-                {JSON.stringify(currentRecord)}
+                {currentRecord && (
+                    <Descriptions layout="horizontal" bordered size="small" column={1}>
+                        <Descriptions.Item label="ID">{currentRecord.id}</Descriptions.Item>
+                        <Descriptions.Item label="Name">{currentRecord.name}</Descriptions.Item>
+                        <Descriptions.Item label="Description">{currentRecord.description}</Descriptions.Item>
+                        <Descriptions.Item label="Parent ID">{currentRecord.parentId}</Descriptions.Item>
+                    </Descriptions>
+                )}
             </Modal>
         </div>
-    )
+    );
 }

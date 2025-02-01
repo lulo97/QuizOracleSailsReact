@@ -1,7 +1,7 @@
-const BACKEND_HOST = "http://localhost:1337/"
+
 
 export async function fetchWrapper(url, options, is_table = false) {
-    const result_fetch = await fetch(BACKEND_HOST + url, options);
+    const result_fetch = await fetch(import.meta.env.VITE_BACKEND_URL + url, options);
     const result_json = await result_fetch.json();
     const { data, error_code, error_message } = result_json;
     

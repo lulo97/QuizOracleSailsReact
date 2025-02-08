@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
+﻿/* Formatted on 2/8/2025 7:00:15 PM (QP5 v5.326) */
 CREATE OR REPLACE PROCEDURE prc_log (p_content VARCHAR2)
 AS
     l_sqlcode   VARCHAR2 (200);

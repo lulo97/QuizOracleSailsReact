@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
+﻿/* Formatted on 2/8/2025 7:00:15 PM (QP5 v5.326) */
 CREATE OR REPLACE PACKAGE pkg_subject
 IS
     PROCEDURE prc_crud (p_refcursor       OUT SYS_REFCURSOR,
@@ -7,6 +7,8 @@ IS
                         p_name                VARCHAR2,
                         p_description         VARCHAR2,
                         p_parent_id           VARCHAR2,
+                        p_vi                  VARCHAR2,
+                        p_en                  VARCHAR2,
                         p_language            VARCHAR2,
                         p_error_code      OUT VARCHAR2,
                         p_error_message   OUT VARCHAR2);
@@ -38,7 +40,7 @@ END;
 /
 
 
-/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
+/* Formatted on 2/8/2025 7:00:15 PM (QP5 v5.326) */
 CREATE OR REPLACE PACKAGE BODY pkg_subject
 IS
     PROCEDURE prc_read (p_refcursor       OUT SYS_REFCURSOR,
@@ -53,11 +55,17 @@ IS
             SELECT s.id
                        AS "id",
                    fn_translate (s.id, p_language, 'SUBJECTS')
+                       AS "nameTranslate",
+                   s.name
                        AS "name",
                    s.description
                        AS "description",
                    s.parent_id
-                       AS "parentId"
+                       AS "parentId",
+                   s.vi
+                       AS "vi",
+                   s.en
+                       AS "en"
               FROM subjects s;
 
         RETURN;
@@ -120,11 +128,15 @@ IS
         INSERT INTO subjects (id,
                               name,
                               description,
-                              parent_id)
+                              parent_id,
+                              vi,
+                              en)
              VALUES (l_id,
                      p_obj ('name'),
                      p_obj ('description'),
-                     p_obj ('parent_id'));
+                     p_obj ('parent_id'),
+                     p_obj ('vi'),
+                     p_obj ('en'));
 
         p_error_code := '0';
 
@@ -166,7 +178,7 @@ IS
         IF l_count = 0
         THEN
             p_error_code := '2';
-            PRC_log ('a err=' || p_error_code);
+            prc_log ('a err=' || p_error_code);
             RAISE pkg_const.exception_unknown;
         END IF;
 
@@ -183,7 +195,7 @@ IS
     EXCEPTION
         WHEN OTHERS
         THEN
-            PRC_log ('b err=' || p_error_code);
+            prc_log ('b err=' || p_error_code);
             l_log := l_log || 'SQLERRM=' || SQLERRM || ',';
             l_log :=
                    l_log
@@ -212,6 +224,8 @@ IS
           FROM subjects
          WHERE id = p_obj ('id');
 
+        prc_log ('id=' || p_obj ('id'));
+
         IF l_count = 0
         THEN
             p_error_code := '2';
@@ -237,7 +251,9 @@ IS
         UPDATE subjects
            SET name = p_obj ('name'),
                description = p_obj ('description'),
-               parent_id = p_obj ('parent_id')
+               parent_id = p_obj ('parent_id'),
+               vi = p_obj ('vi'),
+               en = p_obj ('en')
          WHERE id = p_obj ('id');
 
         p_error_code := '0';
@@ -268,6 +284,8 @@ IS
                         p_name                VARCHAR2,
                         p_description         VARCHAR2,
                         p_parent_id           VARCHAR2,
+                        p_vi                  VARCHAR2,
+                        p_en                  VARCHAR2,
                         p_language            VARCHAR2,
                         p_error_code      OUT VARCHAR2,
                         p_error_message   OUT VARCHAR2)
@@ -279,6 +297,8 @@ IS
         obj ('name') := p_name;
         obj ('description') := p_description;
         obj ('parent_id') := p_parent_id;
+        obj ('vi') := p_vi;
+        obj ('en') := p_en;
 
         IF p_action = 'READ'
         THEN

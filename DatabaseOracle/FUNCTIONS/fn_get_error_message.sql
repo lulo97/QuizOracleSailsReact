@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/26/2025 10:42:04 PM (QP5 v5.326) */
+﻿/* Formatted on 2/8/2025 7:00:15 PM (QP5 v5.326) */
 CREATE OR REPLACE FUNCTION fn_get_error_message (
     p_error_code   VARCHAR2,
     p_language     VARCHAR2:= 'vi',
@@ -9,8 +9,6 @@ IS
     l_log             VARCHAR2 (4000);
     l_variable_name   VARCHAR2 (200);
 BEGIN
-    PRC_LOG (p_error_code || ',' || p_language);
-
     SELECT CASE
                WHEN p_language = 'vi' THEN vi
                WHEN p_language = 'en' THEN en

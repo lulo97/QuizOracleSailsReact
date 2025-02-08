@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/27/2025 10:36:14 PM (QP5 v5.326) */
+﻿/* Formatted on 2/8/2025 7:00:15 PM (QP5 v5.326) */
 CREATE OR REPLACE PROCEDURE prc_empty_cursor (
     p_refcursor       IN OUT SYS_REFCURSOR,
     p_error_code      IN OUT VARCHAR2,

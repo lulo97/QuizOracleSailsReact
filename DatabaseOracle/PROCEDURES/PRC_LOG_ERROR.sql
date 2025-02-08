@@ -1,4 +1,4 @@
-﻿/* Formatted on 1/26/2025 10:42:05 PM (QP5 v5.326) */
+﻿/* Formatted on 2/8/2025 7:00:15 PM (QP5 v5.326) */
 CREATE OR REPLACE PROCEDURE prc_log_error (p_sqlcode   VARCHAR2,
                                            p_sqlerrm   VARCHAR2,
                                            p_trace     VARCHAR2,
